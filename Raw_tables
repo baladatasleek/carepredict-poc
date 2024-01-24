@@ -1,3 +1,4 @@
+
 CREATE TABLE `resident_ambient_data` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -149,3 +150,296 @@ FORMAT Parquet
     `created_at` = timestampadd(MICROSECOND, @var1, from_unixtime(0)),
     `dutc` = timestampadd(MICROSECOND, @var2, from_unixtime(0)),
     `local_time` = timestampadd(MICROSECOND, @var3, from_unixtime(0));   
+
+
+
+    CREATE TABLE `resident_imu_gesture` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dutc_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `local_time` timestamp NOT NULL,
+  `facility_id` int NOT NULL,
+  `consumer_account_id` int NOT NULL,
+  `resident_id` int NOT NULL,
+  `tempo_device_id` int NOT NULL,
+  `resident_imu_compact_id` bigint NOT NULL,
+  `gesture_name` varchar(20) NOT NULL,
+  `resident_gesture_type_id` smallint NOT NULL,
+  `is_worn_right_hand` tinyint NOT NULL,
+  `is_worn_backwards` tinyint NOT NULL,
+  `match_probability` smallint NOT NULL,
+  `match_distance` float NOT NULL,
+  `imu_sample_count` smallint NOT NULL,
+   UNIQUE KEY `PRIMARY` (`id`) USING HASH,
+  SHARD KEY `__SHARDKEY` (`id`),
+  SORT KEY `__UNORDERED` ()
+)  AUTO_INCREMENT=526702719 AUTOSTATS_CARDINALITY_MODE=INCREMENTAL AUTOSTATS_HISTOGRAM_MODE=CREATE AUTOSTATS_SAMPLING=ON SQL_MODE='STRICT_ALL_TABLES';
+
+CREATE AGGREGATOR PIPELINE `resident_imu_gesture`
+AS LOAD DATA S3 's3://mysql-data-archive-incremental/singlestore-poc/cp-facility-1235/cp-facility-1235/cp_facility_1235/cp_facility_1235.resident_imu_gesture'
+ CONFIG '{\"region\": \"us-west-2\"}'
+ CREDENTIALS '{"aws_access_key_id": "XXX", "aws_secret_access_key": "XXX"}'
+ BATCH_INTERVAL 2500
+  MAX_PARTITIONS_PER_BATCH 1
+ DISABLE OUT_OF_ORDER OPTIMIZATION
+DISABLE OFFSETS METADATA GC
+SKIP DUPLICATE KEY ERRORS
+INTO TABLE `resident_imu_gesture`
+FORMAT Parquet
+(
+ `resident_imu_gesture`.`id` <- `id`,                                             
+ @var1 <- `created_at`,                             
+ @var2 <- `dutc_time`,                               
+ @var3 <- `local_time`,                             
+ `resident_imu_gesture`.`facility_id` <- `facility_id`,                           
+ `resident_imu_gesture`.`consumer_account_id` <- `consumer_account_id`,           
+ `resident_imu_gesture`.`resident_id` <- `resident_id`,                           
+ `resident_imu_gesture`.`tempo_device_id` <- `tempo_device_id`,                   
+ `resident_imu_gesture`.`resident_imu_compact_id` <- `resident_imu_compact_id`,   
+ `resident_imu_gesture`.`gesture_name` <- `gesture_name`,                         
+ `resident_imu_gesture`.`resident_gesture_type_id` <- `resident_gesture_type_id`, 
+ `resident_imu_gesture`.`is_worn_right_hand` <- `is_worn_right_hand`,             
+ `resident_imu_gesture`.`is_worn_backwards` <- `is_worn_backwards`,               
+ `resident_imu_gesture`.`match_probability` <- `match_probability`,               
+ `resident_imu_gesture`.`match_distance` <- `match_distance`,                     
+ `resident_imu_gesture`.`imu_sample_count` <- `imu_sample_count`)
+  SET
+    `created_at` = timestampadd(MICROSECOND, @var1, from_unixtime(0)),
+    `dutc_time` = timestampadd(MICROSECOND, @var2, from_unixtime(0)),
+    `local_time` = timestampadd(MICROSECOND, @var3, from_unixtime(0));   
+
+
+
+CREATE TABLE `resident_imu_gravity` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NOT NULL,
+  `dutc_time` timestamp NOT NULL,
+  `local_time` timestamp NOT NULL,
+  `facility_id` int NOT NULL,
+  `consumer_account_id` int NOT NULL,
+  `resident_id` int NOT NULL,
+  `tempo_device_id` int NOT NULL,
+  `is_x_positive_90` tinyint DEFAULT NULL,
+  `is_x_negative_90` tinyint DEFAULT NULL,
+  `is_y_positive_90` tinyint DEFAULT '0',
+  `is_y_negative_90` tinyint DEFAULT '0',
+  `gravity_x_average` float NOT NULL,
+  `gravity_x_deviation` float NOT NULL,
+  `gravity_x_trend_dev` float NOT NULL,
+  `gravity_y_average` float NOT NULL,
+  `gravity_y_deviation` float NOT NULL,
+  `gravity_y_trend_dev` float NOT NULL,
+  `gravity_z_average` float NOT NULL,
+  `gravity_z_deviation` float NOT NULL,
+  `gravity_z_trend_dev` float NOT NULL,
+   UNIQUE KEY `PRIMARY` (`id`) USING HASH,
+  SHARD KEY `__SHARDKEY` (`id`),
+  SORT KEY `__UNORDERED` ()
+)  AUTO_INCREMENT=313313411 AUTOSTATS_CARDINALITY_MODE=INCREMENTAL AUTOSTATS_HISTOGRAM_MODE=CREATE AUTOSTATS_SAMPLING=ON SQL_MODE='STRICT_ALL_TABLES';
+
+CREATE AGGREGATOR PIPELINE `resident_imu_gravity`
+AS LOAD DATA S3 's3://mysql-data-archive-incremental/singlestore-poc/cp-facility-1235/cp-facility-1235/cp_facility_1235/cp_facility_1235.resident_imu_gravity'
+ CONFIG '{\"region\": \"us-west-2\"}'
+ CREDENTIALS '{"aws_access_key_id": "XXX", "aws_secret_access_key": "XXX"}'
+ BATCH_INTERVAL 2500
+  MAX_PARTITIONS_PER_BATCH 1
+ DISABLE OUT_OF_ORDER OPTIMIZATION
+DISABLE OFFSETS METADATA GC
+SKIP DUPLICATE KEY ERRORS
+INTO TABLE `resident_imu_gravity`
+FORMAT Parquet
+(
+ `resident_imu_gravity`.`id` <- `id`,                                     
+ @var1 <- `created_at`,                     
+ @var2 <- `dutc_time`,                       
+ @var3 <- `local_time`,                     
+ `resident_imu_gravity`.`facility_id` <- `facility_id`,                   
+ `resident_imu_gravity`.`consumer_account_id` <- `consumer_account_id`,   
+ `resident_imu_gravity`.`resident_id` <- `resident_id`,                   
+ `resident_imu_gravity`.`tempo_device_id` <- `tempo_device_id`,           
+ `resident_imu_gravity`.`is_x_positive_90` <- `is_x_positive_90`,         
+ `resident_imu_gravity`.`is_x_negative_90` <- `is_x_negative_90`,         
+ `resident_imu_gravity`.`is_y_positive_90` <- `is_y_positive_90`,         
+ `resident_imu_gravity`.`is_y_negative_90` <- `is_y_negative_90`,         
+ `resident_imu_gravity`.`gravity_x_average` <- `gravity_x_average`,       
+ `resident_imu_gravity`.`gravity_x_deviation` <- `gravity_x_deviation`,   
+ `resident_imu_gravity`.`gravity_x_trend_dev` <- `gravity_x_trend_dev`,   
+ `resident_imu_gravity`.`gravity_y_average` <- `gravity_y_average`,       
+ `resident_imu_gravity`.`gravity_y_deviation` <- `gravity_y_deviation`,   
+ `resident_imu_gravity`.`gravity_y_trend_dev` <- `gravity_y_trend_dev`,   
+ `resident_imu_gravity`.`gravity_z_average` <- `gravity_z_average`,       
+ `resident_imu_gravity`.`gravity_z_deviation` <- `gravity_z_deviation`,   
+ `resident_imu_gravity`.`gravity_z_trend_dev` <- `gravity_z_trend_dev`)
+  set    `created_at` = timestampadd(MICROSECOND, @var1, from_unixtime(0)),
+    `dutc_time` = timestampadd(MICROSECOND, @var2, from_unixtime(0)),
+    `local_time` = timestampadd(MICROSECOND, @var3, from_unixtime(0));  
+
+
+
+
+CREATE TABLE `resident_imu_steps` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dutc` timestamp NOT NULL,
+  `local_time` timestamp NOT NULL,
+  `facility_id` int NOT NULL,
+  `consumer_account_id` int NOT NULL,
+  `resident_id` int NOT NULL,
+  `tempo_device_id` int NOT NULL,
+  `millisecond_offset` int NOT NULL,
+  UNIQUE KEY `PRIMARY` (`id`) USING HASH,
+  SHARD KEY `__SHARDKEY` (`id`),
+  SORT KEY `__UNORDERED` ()
+)  AUTO_INCREMENT=956685828 AUTOSTATS_CARDINALITY_MODE=INCREMENTAL AUTOSTATS_HISTOGRAM_MODE=CREATE AUTOSTATS_SAMPLING=ON SQL_MODE='STRICT_ALL_TABLES';
+
+
+CREATE AGGREGATOR PIPELINE `resident_imu_steps`
+AS LOAD DATA S3 's3://mysql-data-archive-incremental/singlestore-poc/cp-facility-1235/cp-facility-1235/cp_facility_1235/cp_facility_1235.resident_imu_steps'
+ CONFIG '{\"region\": \"us-west-2\"}'
+ CREDENTIALS '{"aws_access_key_id": "XXX", "aws_secret_access_key": "XXX"}'
+ BATCH_INTERVAL 2500
+  MAX_PARTITIONS_PER_BATCH 1
+ DISABLE OUT_OF_ORDER OPTIMIZATION
+DISABLE OFFSETS METADATA GC
+SKIP DUPLICATE KEY ERRORS
+INTO TABLE `resident_imu_steps`
+FORMAT Parquet
+(
+ `resident_imu_steps`.`id` <- `id`,                                       
+ @var1 <- `created_at`,                       
+ @var2 <- `dutc`,                                   
+ @var3 <- `local_time`,                       
+ `resident_imu_steps`.`facility_id` <- `facility_id`,                     
+ `resident_imu_steps`.`consumer_account_id` <- `consumer_account_id`,     
+ `resident_imu_steps`.`resident_id` <- `resident_id`,                     
+ `resident_imu_steps`.`tempo_device_id` <- `tempo_device_id`,             
+ `resident_imu_steps`.`millisecond_offset` <- `millisecond_offset`)
+  set    `created_at` = timestampadd(MICROSECOND, @var1, from_unixtime(0)),
+    `dutc` = timestampadd(MICROSECOND, @var2, from_unixtime(0)),
+    `local_time` = timestampadd(MICROSECOND, @var3, from_unixtime(0));         
+
+
+CREATE TABLE `resident_movement_summary` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dutc` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `local_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `facility_id` int NOT NULL,
+  `consumer_account_id` int NOT NULL,
+  `resident_id` int NOT NULL,
+  `tempo_device_id` int DEFAULT NULL,
+  `is_worn` tinyint DEFAULT NULL,
+  `orient_x_up` tinyint NOT NULL,
+  `orient_x_down` tinyint NOT NULL,
+  `orient_y_up` tinyint NOT NULL,
+  `orient_y_down` tinyint NOT NULL,
+  `orient_z_up` tinyint NOT NULL,
+  `orient_z_down` tinyint NOT NULL,
+  `motion_level_0` smallint NOT NULL,
+  `motion_level_1` smallint NOT NULL,
+  `motion_level_2` smallint NOT NULL,
+  `motion_level_3` smallint NOT NULL,
+  `motion_level_4` smallint NOT NULL,
+  `step_count` smallint NOT NULL,
+  `avg_gravity_angle_x` smallint DEFAULT NULL,
+  `avg_gravity_angle_y` smallint DEFAULT NULL,
+  `avg_gravity_angle_z` smallint DEFAULT NULL,
+  `last_room_type` tinyint DEFAULT NULL,
+  `last_beacon_id` int DEFAULT NULL,
+  `barometer_fail_count` smallint DEFAULT NULL,
+   UNIQUE KEY `PRIMARY` (`id`) USING HASH,
+  SHARD KEY `__SHARDKEY` (`id`),
+  SORT KEY `__UNORDERED` ()
+) AUTO_INCREMENT=330419787 AUTOSTATS_CARDINALITY_MODE=INCREMENTAL AUTOSTATS_HISTOGRAM_MODE=CREATE AUTOSTATS_SAMPLING=ON SQL_MODE='STRICT_ALL_TABLES';
+
+CREATE AGGREGATOR PIPELINE `resident_movement_summary`
+AS LOAD DATA S3 's3://mysql-data-archive-incremental/singlestore-poc/cp-facility-1235/cp-facility-1235/cp_facility_1235/cp_facility_1235.resident_movement_summary'
+ CONFIG '{\"region\": \"us-west-2\"}'
+ CREDENTIALS '{"aws_access_key_id": "XXX", "aws_secret_access_key": "XXX"}'
+ BATCH_INTERVAL 2500
+  MAX_PARTITIONS_PER_BATCH 1
+ DISABLE OUT_OF_ORDER OPTIMIZATION
+DISABLE OFFSETS METADATA GC
+SKIP DUPLICATE KEY ERRORS
+INTO TABLE `resident_movement_summary`
+FORMAT Parquet
+(
+ `resident_movement_summary`.`id` <- `id`,                                     
+ @var1 <- `created_at`,                     
+ @var2 <- `dutc`,                                 
+ @var3 <- `local_time`,                     
+ `resident_movement_summary`.`facility_id` <- `facility_id`,                   
+ `resident_movement_summary`.`consumer_account_id` <- `consumer_account_id`,   
+ `resident_movement_summary`.`resident_id` <- `resident_id`,                   
+ `resident_movement_summary`.`tempo_device_id` <- `tempo_device_id`,           
+ `resident_movement_summary`.`is_worn` <- `is_worn`,                           
+ `resident_movement_summary`.`orient_x_up` <- `orient_x_up`,                   
+ `resident_movement_summary`.`orient_x_down` <- `orient_x_down`,               
+ `resident_movement_summary`.`orient_y_up` <- `orient_y_up`,                   
+ `resident_movement_summary`.`orient_y_down` <- `orient_y_down`,               
+ `resident_movement_summary`.`orient_z_up` <- `orient_z_up`,                   
+ `resident_movement_summary`.`orient_z_down` <- `orient_z_down`,               
+ `resident_movement_summary`.`motion_level_0` <- `motion_level_0`,             
+ `resident_movement_summary`.`motion_level_1` <- `motion_level_1`,             
+ `resident_movement_summary`.`motion_level_2` <- `motion_level_2`,             
+ `resident_movement_summary`.`motion_level_3` <- `motion_level_3`,             
+ `resident_movement_summary`.`motion_level_4` <- `motion_level_4`,             
+ `resident_movement_summary`.`step_count` <- `step_count`,                     
+ `resident_movement_summary`.`avg_gravity_angle_x` <- `avg_gravity_angle_x`,   
+ `resident_movement_summary`.`avg_gravity_angle_y` <- `avg_gravity_angle_y`,   
+ `resident_movement_summary`.`avg_gravity_angle_z` <- `avg_gravity_angle_z`,   
+ `resident_movement_summary`.`last_room_type` <- `last_room_type`,             
+ `resident_movement_summary`.`last_beacon_id` <- `last_beacon_id`,             
+ `resident_movement_summary`.`barometer_fail_count` <- `barometer_fail_count`)
+  set    `created_at` = timestampadd(MICROSECOND, @var1, from_unixtime(0)),
+    `dutc` = timestampadd(MICROSECOND, @var2, from_unixtime(0)),
+    `local_time` = timestampadd(MICROSECOND, @var3, from_unixtime(0)); 
+
+
+
+
+CREATE TABLE `resident_imu_compact2` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `local_time` timestamp NULL DEFAULT NULL,
+  `resident_id` int NOT NULL,
+  `body_accel_x` tinyint NOT NULL,
+  `body_accel_y` tinyint NOT NULL,
+  `body_accel_z` tinyint NOT NULL,
+  `quat_a` float NOT NULL,
+  `quat_b` float NOT NULL,
+  `quat_c` float NOT NULL,
+  `quat_d` float NOT NULL,
+  `pressure` smallint unsigned NOT NULL,
+ UNIQUE KEY `PRIMARY` (`id`) USING HASH,
+  SHARD KEY `__SHARDKEY` (`id`),
+  SORT KEY `__UNORDERED` ()
+) AUTO_INCREMENT=107572958468 AUTOSTATS_CARDINALITY_MODE=INCREMENTAL AUTOSTATS_HISTOGRAM_MODE=CREATE AUTOSTATS_SAMPLING=ON SQL_MODE='STRICT_ALL_TABLES';
+
+
+CREATE AGGREGATOR PIPELINE `resident_imu_compact2`
+AS LOAD DATA S3 's3://mysql-data-archive-incremental/singlestore-poc/cp-facility-1235/cp-facility-1235/cp_facility_1235/cp_facility_1235.resident_imu_compact2'
+ CONFIG '{\"region\": \"us-west-2\"}'
+ CREDENTIALS '{"aws_access_key_id": "XXX", "aws_secret_access_key": "XXX"}'
+ BATCH_INTERVAL 2500
+  MAX_PARTITIONS_PER_BATCH 1
+ DISABLE OUT_OF_ORDER OPTIMIZATION
+DISABLE OFFSETS METADATA GC
+SKIP DUPLICATE KEY ERRORS
+INTO TABLE `resident_imu_compact2`
+FORMAT Parquet
+(
+ `resident_imu_compact2`.`id` <- `id`,                                    
+ @var1 <- `created_at`,                    
+ @var2 <- `local_time`,                    
+ `resident_imu_compact2`.`resident_id` <- `resident_id`,                  
+ `resident_imu_compact2`.`body_accel_x` <- `body_accel_x`,                
+ `resident_imu_compact2`.`body_accel_y` <- `body_accel_y`,                
+ `resident_imu_compact2`.`body_accel_z` <- `body_accel_z`,                
+ `resident_imu_compact2`.`quat_a` <- `quat_a`,                            
+ `resident_imu_compact2`.`quat_b` <- `quat_b`,                            
+ `resident_imu_compact2`.`quat_c` <- `quat_c`,                            
+ `resident_imu_compact2`.`quat_d` <- `quat_d`,                            
+ `resident_imu_compact2`.`pressure` <- `pressure`)
+    set    `created_at` = timestampadd(MICROSECOND, @var1, from_unixtime(0)),
+    `local_time` = timestampadd(MICROSECOND, @var2, from_unixtime(0));                     
