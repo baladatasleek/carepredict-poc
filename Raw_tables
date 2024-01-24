@@ -1,0 +1,151 @@
+CREATE TABLE `resident_ambient_data` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dutc` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00.000000',
+  `local_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00.000000',
+  `facility_id` int(11) NOT NULL,
+  `consumer_account_id` int(11) DEFAULT NULL,
+  `resident_id` int(11) NOT NULL,
+  `tempo_device_id` int(11) NOT NULL,
+  `base_station_id` int(11) NOT NULL,
+  `is_worn` tinyint(4) NOT NULL,
+  `on_charge` tinyint(4) NOT NULL,
+  `temperature_wrist` float NOT NULL,
+  `temperature_pressure` float NOT NULL,
+  `temperature_humidity` float NOT NULL,
+  `temperature_ambient` float DEFAULT NULL,
+  `pressure` float NOT NULL,
+  `humidity` float NOT NULL,
+  `uv_index` float NOT NULL,
+  `ambient_light` float NOT NULL,
+  `peak_sound` float NOT NULL,
+  `average_sound` float NOT NULL,
+  `light_level` smallint(6) NOT NULL,
+  `heart_rate` smallint(6) NOT NULL,
+  `heart_rri` smallint(6) NOT NULL,
+  `heart_qos` smallint(6) NOT NULL,
+  `last_room_type` tinyint(4) DEFAULT NULL,
+  `last_beacon_id` int(11) DEFAULT NULL,
+  UNIQUE KEY `PRIMARY` (`id`) USING HASH,
+  SHARD KEY `__SHARDKEY` (`id`),
+  SORT KEY `__UNORDERED` ()
+) AUTO_INCREMENT=1125899906842625 AUTOSTATS_CARDINALITY_MODE=INCREMENTAL AUTOSTATS_HISTOGRAM_MODE=CREATE AUTOSTATS_SAMPLING=ON SQL_MODE='STRICT_ALL_TABLES';
+
+
+CREATE AGGREGATOR PIPELINE `resident_ambient_data`
+AS LOAD DATA S3 's3://mysql-data-archive-incremental/singlestore-poc/cp-facility-1235/cp-facility-1235/cp_facility_1235/cp_facility_1235.resident_ambient_data'
+ CONFIG '{\"region\": \"us-west-2\"}'
+ CREDENTIALS '{"aws_access_key_id": "XXX", "aws_secret_access_key": "XXX"}'
+ BATCH_INTERVAL 2500
+  MAX_PARTITIONS_PER_BATCH 1
+ DISABLE OUT_OF_ORDER OPTIMIZATION
+DISABLE OFFSETS METADATA GC
+SKIP DUPLICATE KEY ERRORS
+INTO TABLE `resident_ambient_data`
+FORMAT Parquet
+(
+  `resident_ambient_data`.`id` <- `id`,
+  @var1 <- `created_at`,
+  @var2 <- `dutc`,
+  @var3 <- `local_time`,
+  `resident_ambient_data`.`facility_id` <- `facility_id`,
+  `resident_ambient_data`.`consumer_account_id` <- `consumer_account_id`,
+  `resident_ambient_data`.`resident_id` <- `resident_id`,
+   `resident_ambient_data`.`tempo_device_id` <- `tempo_device_id`,
+   `resident_ambient_data`.`base_station_id` <- `base_station_id`,
+   `resident_ambient_data`.`is_worn` <- `is_worn`,
+   `resident_ambient_data`.`on_charge` <- `on_charge`,
+   `resident_ambient_data`.`temperature_wrist` <- `temperature_wrist`,
+   `resident_ambient_data`.`temperature_pressure` <- `temperature_pressure`,
+   `resident_ambient_data`.`temperature_humidity` <- `temperature_humidity`,
+   `resident_ambient_data`.`temperature_ambient` <- `temperature_ambient`,
+   `resident_ambient_data`.`pressure` <- `pressure`,
+   `resident_ambient_data`.`humidity` <- `humidity`,
+   `resident_ambient_data`.`uv_index` <- `uv_index`,
+   `resident_ambient_data`.`ambient_light` <- `ambient_light`,
+   `resident_ambient_data`.`peak_sound` <- `peak_sound`,
+   `resident_ambient_data`.`average_sound` <- `average_sound`,
+  `resident_ambient_data`. `light_level` <- `light_level`,
+   `resident_ambient_data`.`heart_rate` <- `heart_rate`,
+   `resident_ambient_data`.`heart_rri` <- `heart_rri`,
+   `resident_ambient_data`.`heart_qos` <-  `heart_qos`,
+  `resident_ambient_data`. `last_room_type` <- `last_room_type`,
+   `resident_ambient_data`.`last_beacon_id` <- `last_beacon_id`
+  ) SET
+    `created_at` = timestampadd(MICROSECOND, @var1, from_unixtime(0)),
+    `dutc` = timestampadd(MICROSECOND, @var2, from_unixtime(0)),
+    `local_time` = timestampadd(MICROSECOND, @var3, from_unixtime(0));
+
+
+CREATE TABLE `resident_hrm_summary` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dutc` timestamp NOT NULL,
+  `local_time` timestamp NOT NULL,
+  `facility_id` int NOT NULL,
+  `consumer_account_id` int NOT NULL,
+  `resident_id` int NOT NULL,
+  `tempo_device_id` int NOT NULL,
+  `sub_record_count` tinyint NOT NULL,
+  `motion_level_count` smallint NOT NULL,
+  `heart_rate` smallint NOT NULL,
+  `heart_rate_confidence` tinyint NOT NULL,
+  `rr_interval` smallint NOT NULL,
+  `rr_confidence` tinyint NOT NULL,
+  `activity_classifier` tinyint NOT NULL,
+  `spo2_r_value` smallint NOT NULL,
+  `spo2_confidence` tinyint NOT NULL,
+  `spo2_percentage` tinyint NOT NULL,
+  `spo2_percent_complete` tinyint NOT NULL,
+  `is_spo2_low_quality` tinyint NOT NULL,
+  `is_spo2_motion_detect` tinyint NOT NULL,
+  `is_spo2_low_perfusion` tinyint NOT NULL,
+  `is_spo2_unreliable` tinyint NOT NULL,
+  `spo2_algorithm_state` tinyint NOT NULL,
+  `skin_detect_state` tinyint NOT NULL,
+  UNIQUE KEY `PRIMARY` (`id`) USING HASH,
+  SHARD KEY `__SHARDKEY` (`id`),
+  SORT KEY `__UNORDERED` ()
+)  AUTO_INCREMENT=388347980 AUTOSTATS_CARDINALITY_MODE=INCREMENTAL AUTOSTATS_HISTOGRAM_MODE=CREATE AUTOSTATS_SAMPLING=ON SQL_MODE='STRICT_ALL_TABLES';
+
+
+CREATE AGGREGATOR PIPELINE `resident_hrm_summary`
+AS LOAD DATA S3 's3://mysql-data-archive-incremental/singlestore-poc/cp-facility-1235/cp-facility-1235/cp_facility_1235/cp_facility_1235.resident_hrm_summary'
+ CONFIG '{\"region\": \"us-west-2\"}'
+ CREDENTIALS '{"aws_access_key_id": "XXX", "aws_secret_access_key": "XXX"}'
+ BATCH_INTERVAL 2500
+  MAX_PARTITIONS_PER_BATCH 1
+ DISABLE OUT_OF_ORDER OPTIMIZATION
+DISABLE OFFSETS METADATA GC
+SKIP DUPLICATE KEY ERRORS
+INTO TABLE `resident_hrm_summary`
+FORMAT Parquet
+(`resident_hrm_summary`.`id` <- `id`,                                       
+ @var1 <- `created_at`,                       
+ @var2 <- `dutc`,                                   
+ @var3 <- `local_time`,                       
+ `resident_hrm_summary`.`facility_id` <- `facility_id`,                     
+ `resident_hrm_summary`.`consumer_account_id` <- `consumer_account_id`,     
+ `resident_hrm_summary`.`resident_id` <- `resident_id`,                     
+ `resident_hrm_summary`.`tempo_device_id` <- `tempo_device_id`,             
+ `resident_hrm_summary`.`sub_record_count` <- `sub_record_count`,           
+ `resident_hrm_summary`.`motion_level_count` <- `motion_level_count`,       
+ `resident_hrm_summary`.`heart_rate` <- `heart_rate`,                       
+ `resident_hrm_summary`.`heart_rate_confidence` <- `heart_rate_confidence`, 
+ `resident_hrm_summary`.`rr_interval` <- `rr_interval`,                     
+ `resident_hrm_summary`.`rr_confidence` <- `rr_confidence`,                 
+ `resident_hrm_summary`.`activity_classifier` <- `activity_classifier`,     
+ `resident_hrm_summary`.`spo2_r_value` <- `spo2_r_value`,                   
+ `resident_hrm_summary`.`spo2_confidence` <- `spo2_confidence`,             
+ `resident_hrm_summary`.`spo2_percentage` <- `spo2_percentage`,             
+ `resident_hrm_summary`.`spo2_percent_complete` <- `spo2_percent_complete`, 
+ `resident_hrm_summary`.`is_spo2_low_quality` <- `is_spo2_low_quality`,     
+ `resident_hrm_summary`.`is_spo2_motion_detect` <- `is_spo2_motion_detect`, 
+ `resident_hrm_summary`.`is_spo2_low_perfusion` <- `is_spo2_low_perfusion`, 
+ `resident_hrm_summary`.`is_spo2_unreliable` <- `is_spo2_unreliable`,       
+ `resident_hrm_summary`.`spo2_algorithm_state` <- `spo2_algorithm_state`,   
+ `resident_hrm_summary`.`skin_detect_state` <- `skin_detect_state`)
+ SET
+    `created_at` = timestampadd(MICROSECOND, @var1, from_unixtime(0)),
+    `dutc` = timestampadd(MICROSECOND, @var2, from_unixtime(0)),
+    `local_time` = timestampadd(MICROSECOND, @var3, from_unixtime(0));   
